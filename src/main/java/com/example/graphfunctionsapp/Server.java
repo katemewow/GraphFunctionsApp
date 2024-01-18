@@ -6,39 +6,33 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import javafx.application.Platform;
-import javafx.scene.control.TextArea;
-
 public class Server implements Runnable {
     private final int port;
-    private final TextArea textArea;
 
-    public Server(int port, TextArea textArea) {
+    public Server(int port) {
         this.port = port;
-        this.textArea = textArea;
     }
 
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            Platform.runLater(() -> textArea.appendText("Сервер запущен на порту " + port + "\n"));
+            System.out.println("Server was started on port: " + port);
 
             while (!Thread.currentThread().isInterrupted()) {
                 Socket clientSocket = serverSocket.accept();
-                new Thread(new ClientHandler(clientSocket, textArea)).start();
+                new Thread(new ClientHandler(clientSocket)).start();
             }
         } catch (IOException e) {
-            Platform.runLater(() -> textArea.appendText("Ошибка сервера: " + e.getMessage() + "\n"));
+            System.out.println("Server wasn't started on port: " + port + " with error: " + e.getMessage());
+
         }
     }
 
     private static class ClientHandler implements Runnable {
         private final Socket clientSocket;
-        private final TextArea textArea;
 
-        public ClientHandler(Socket socket, TextArea textArea) {
+        public ClientHandler(Socket socket) {
             this.clientSocket = socket;
-            this.textArea = textArea;
         }
 
         public void run() {
@@ -50,7 +44,7 @@ public class Server implements Runnable {
                 if (length > 0) {
                     // Чтение самого сообщения
                     String jsonMessage = in.readUTF();
-                    Platform.runLater(() -> textArea.appendText("Получено от клиента: " + jsonMessage + "\n"));
+                    System.out.println("Получено от клиента:" + jsonMessage);
 
                     // Обработка JSON и выполнение вычислений
                     String resultJson = processJson(jsonMessage);
@@ -60,7 +54,7 @@ public class Server implements Runnable {
                 }
 
             } catch (IOException e) {
-                Platform.runLater(() -> textArea.appendText("Ошибка при обработке клиента: " + e.getMessage() + "\n"));
+                System.out.println("Ошибка при обработке клиента: " + e.getMessage());
             }
         }
 

@@ -73,12 +73,13 @@ public class Server implements Runnable {
                         for (double y = t0; y <= tend; y += tstep) {
                             float z = function.compute((float)x, (float)y, param1, param2);
                             out.println(createJsonToAnswer(x, y, z));
+                            Thread.sleep(500);
                         }
                     }
                     out.println("end");
                 }
 
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 System.out.println("Ошибка при обработке клиента: " + e.getMessage());
             }
         }

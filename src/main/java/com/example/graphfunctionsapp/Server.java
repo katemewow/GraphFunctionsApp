@@ -45,22 +45,14 @@ public class Server implements Runnable {
 
                 // Чтение длины сообщения
                 int length = in.readInt();
+                System.out.println("DEBUG --- Чтение длины сообщения --- " + length);
                 if (length > 0) {
                     // Чтение самого сообщения
                     String jsonMessage = in.readUTF();
-                    System.out.println("Получено от клиента:" + jsonMessage);
-//
+                    System.out.println("DEBUG --- Получено от клиента --- " + jsonMessage);
 
-//                    // Обработка JSON и выполнение вычислений
-//                    String resultJson = processJson(jsonMessage);
-//
-//                    // Отправка результата обратно клиенту
-//                    out.println(resultJson);
-
-                    // new version
-                    // Обработка JSON и выполнение вычислений
                     JSONObject json = new JSONObject(jsonMessage);
-                    System.out.println("Получено от клиента JSON:" + json);
+                    System.out.println("DEBUG --- Получено от клиента JSON --- " + json);
 
                     Double t0 = getDoubleValueOfJson(T_0, json);
                     Double tend = getDoubleValueOfJson(T_END, json);
@@ -71,8 +63,9 @@ public class Server implements Runnable {
 
                     for (double x = t0; x <= tend; x += tstep) {
                         for (double y = t0; y <= tend; y += tstep) {
-                            float z = function.compute((float)x, (float)y, param1, param2);
+                            float z = function.compute((float) x, (float) y, param1, param2);
                             out.println(createJsonToAnswer(x, y, z));
+                            System.out.println("DEBUG --- send points --- " + createJsonToAnswer(x, y, z));
                             Thread.sleep(500);
                         }
                     }
@@ -82,10 +75,6 @@ public class Server implements Runnable {
             } catch (IOException | InterruptedException e) {
                 System.out.println("Ошибка при обработке клиента: " + e.getMessage());
             }
-        }
-
-        private String processJson(String jsonMessage) {
-            return jsonMessage;
         }
 
         private String createJsonToAnswer(Double x, Double y, Float z) {

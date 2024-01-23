@@ -1,14 +1,23 @@
 package com.example.graphfunctionsapp;
 
-import org.json.JSONObject;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import static com.example.graphfunctionsapp.Params.*;
+import org.json.JSONObject;
+
+import static com.example.graphfunctionsapp.Params.PARAM1;
+import static com.example.graphfunctionsapp.Params.PARAM2;
+import static com.example.graphfunctionsapp.Params.T_0;
+import static com.example.graphfunctionsapp.Params.T_END;
+import static com.example.graphfunctionsapp.Params.T_STEP;
+import static com.example.graphfunctionsapp.Params.X;
+import static com.example.graphfunctionsapp.Params.Y;
+import static com.example.graphfunctionsapp.Params.Z;
+import static com.example.graphfunctionsapp.Params.getDoubleValueOfJson;
+import static com.example.graphfunctionsapp.Params.getFloatValueOfJson;
 
 public class Server implements Runnable {
     private final int port;
@@ -54,19 +63,32 @@ public class Server implements Runnable {
                     JSONObject json = new JSONObject(jsonMessage);
                     System.out.println("DEBUG --- Получено от клиента JSON --- " + json);
 
-                    Double t0 = getDoubleValueOfJson(T_0, json);
-                    Double tend = getDoubleValueOfJson(T_END, json);
-                    Double tstep = getDoubleValueOfJson(T_STEP, json);
-                    Float param1 = getFloatValueOfJson(PARAM1, json);
-                    Float param2 = getFloatValueOfJson(PARAM2, json);
+                    double t0 = getDoubleValueOfJson(T_0, json);
+                    double tend = getDoubleValueOfJson(T_END, json);
+                    double tStep = getDoubleValueOfJson(T_STEP, json);
+                    double param1 = getFloatValueOfJson(PARAM1, json);
+                    double param2 = getFloatValueOfJson(PARAM2, json);
                     Function3D function = new Function3D();
 
-                    for (double x = t0; x <= tend; x += tstep) {
-                        for (double y = t0; y <= tend; y += tstep) {
-                            float z = function.compute((float) x, (float) y, param1, param2);
-                            out.println(createJsonToAnswer(x, y, z));
-                            System.out.println("DEBUG --- send points --- " + createJsonToAnswer(x, y, z));
-                            Thread.sleep(500);
+                    int stepCounter = 0;
+                    int maxSteps = 100; // Количество шагов до отправки группы точек
+                    StringBuilder pointsBatch = new StringBuilder();
+
+                    for (double x = t0; x <= tend; x += tStep) {
+                        for (double y = t0; y <= tend; y += tStep) {
+                            double z = function.compute(x, y, param1, param2);
+                            stepCounter++;
+
+                            if (stepCounter >= maxSteps) {
+                                // Отправляем накопленные точки
+                                pointsBatch.append(createJsonToAnswer(x, y, z)).append("\n");
+                                out.print(pointsBatch);
+                                out.flush();
+                                pointsBatch.setLength(0); // Очищаем буфер
+                                stepCounter = 0; // Сброс счетчика
+                                Thread.sleep(500); // Пауза перед следующей группой точек
+                                out.println("--END OF BATCH--"); // Отправляем маркер конца пакета
+                            }
                         }
                     }
                     out.println("end");
@@ -77,7 +99,7 @@ public class Server implements Runnable {
             }
         }
 
-        private String createJsonToAnswer(Double x, Double y, Float z) {
+        private String createJsonToAnswer(double x, double y, double z) {
             // Сериализация данных в JSON
             JSONObject json = new JSONObject();
             json.put(X.name(), x);

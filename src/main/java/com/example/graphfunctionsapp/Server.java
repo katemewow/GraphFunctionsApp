@@ -5,19 +5,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 
-import static com.example.graphfunctionsapp.Params.PARAM1;
-import static com.example.graphfunctionsapp.Params.PARAM2;
-import static com.example.graphfunctionsapp.Params.T_0;
-import static com.example.graphfunctionsapp.Params.T_END;
-import static com.example.graphfunctionsapp.Params.T_STEP;
-import static com.example.graphfunctionsapp.Params.X;
-import static com.example.graphfunctionsapp.Params.Y;
-import static com.example.graphfunctionsapp.Params.Z;
-import static com.example.graphfunctionsapp.Params.getDoubleValueOfJson;
-import static com.example.graphfunctionsapp.Params.getFloatValueOfJson;
+import static com.example.graphfunctionsapp.Params.*;
+
 
 public class Server implements Runnable {
     private final int port;
@@ -78,23 +71,31 @@ public class Server implements Runnable {
                         for (double y = t0; y <= tend; y += tStep) {
                             double z = function.compute(x, y, param1, param2);
                             stepCounter++;
+                            pointsBatch.append(createJsonToAnswer(x, y, z)).append("\n");
 
                             if (stepCounter >= maxSteps) {
                                 // Отправляем накопленные точки
-                                pointsBatch.append(createJsonToAnswer(x, y, z)).append("\n");
                                 out.print(pointsBatch);
                                 out.flush();
                                 pointsBatch.setLength(0); // Очищаем буфер
                                 stepCounter = 0; // Сброс счетчика
-                                Thread.sleep(500); // Пауза перед следующей группой точек
+                                try {
+//                                    TimeUnit.SECONDS.sleep(1); // Приостановка выполнения на 1 секунду
+                                    TimeUnit.MILLISECONDS.sleep(300); // Приостановка выполнения на 1 секунду
+                                } catch (InterruptedException e) {
+                                    // Обработка исключения, если поток прерван
+                                } // Пауза перед следующей группой точек
                                 out.println("--END OF BATCH--"); // Отправляем маркер конца пакета
+                            } else {
+                                out.print(pointsBatch);
+                                pointsBatch.setLength(0);
                             }
                         }
                     }
                     out.println("end");
                 }
 
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 System.out.println("Ошибка при обработке клиента: " + e.getMessage());
             }
         }

@@ -64,37 +64,76 @@ public class Server implements Runnable {
                     double param1 = getFloatValueOfJson(PARAM1, json);
                     double param2 = getFloatValueOfJson(PARAM2, json);
                     maxSteps = getIntegerValueOfJson(T_EMIT, json); // limit
-                    Function3D function = new Function3D();
+                    String funcName = getStringValueOfJson(FUNC_NAME, json);
 
-                    int stepCounter = 0;
-                     // Количество шагов до отправки группы точек
-                    StringBuilder pointsBatch = new StringBuilder();
+                    switch (funcName) {
+                        case "Basic_func":
+                            Function3D function = new Function3D();
+                            int stepCounter = 0;
+                            // Количество шагов до отправки группы точек
+                            StringBuilder pointsBatch = new StringBuilder();
+                            for (double x = t0; x <= tend; x += tStep) {
+                                for (double y = t0; y <= tend; y += tStep) {
+                                    double z = function.compute(x, y, param1, param2);
+                                    stepCounter++;
+                                    pointsBatch.append(createJsonToAnswer(x, y, z)).append("\n");
 
-                    for (double x = t0; x <= tend; x += tStep) {
-                        for (double y = t0; y <= tend; y += tStep) {
-                            double z = function.compute(x, y, param1, param2);
-                            stepCounter++;
-                            pointsBatch.append(createJsonToAnswer(x, y, z)).append("\n");
-
-                            if (stepCounter >= maxSteps) {
-                                // Отправляем накопленные точки
-                                out.print(pointsBatch);
-                                out.flush();
-                                pointsBatch.setLength(0); // Очищаем буфер
-                                stepCounter = 0; // Сброс счетчика
-                                try {
-//                                    TimeUnit.SECONDS.sleep(1); // Приостановка выполнения на 1 секунду
-                                    TimeUnit.MILLISECONDS.sleep(300); // Приостановка выполнения на 1 секунду
-                                } catch (InterruptedException e) {
-                                    // Обработка исключения, если поток прерван
-                                } // Пауза перед следующей группой точек
-                                out.println("--END OF BATCH--"); // Отправляем маркер конца пакета
-                            } else {
-                                out.print(pointsBatch);
-                                pointsBatch.setLength(0);
+                                    if (stepCounter >= maxSteps) {
+                                        // Отправляем накопленные точки
+                                        out.print(pointsBatch);
+                                        out.flush();
+                                        pointsBatch.setLength(0); // Очищаем буфер
+                                        stepCounter = 0; // Сброс счетчика
+                                        try {
+                                            TimeUnit.MILLISECONDS.sleep(300); // Приостановка выполнения на 1 секунду
+                                        } catch (InterruptedException e) {
+                                            // Обработка исключения, если поток прерван
+                                        } // Пауза перед следующей группой точек
+                                        out.println("--END OF BATCH--"); // Отправляем маркер конца пакета
+                                    } else {
+                                        out.print(pointsBatch);
+                                        pointsBatch.setLength(0);
+                                    }
+                                }
                             }
-                        }
+                            break;
+                        case "Other_func":
+                            break;
+                        default:
+                            break;
                     }
+
+
+//                    Function3D function = new Function3D();
+//
+//                    int stepCounter = 0;
+//                     // Количество шагов до отправки группы точек
+//                    StringBuilder pointsBatch = new StringBuilder();
+
+//                    for (double x = t0; x <= tend; x += tStep) {
+//                        for (double y = t0; y <= tend; y += tStep) {
+//                            double z = function.compute(x, y, param1, param2);
+//                            stepCounter++;
+//                            pointsBatch.append(createJsonToAnswer(x, y, z)).append("\n");
+//
+//                            if (stepCounter >= maxSteps) {
+//                                // Отправляем накопленные точки
+//                                out.print(pointsBatch);
+//                                out.flush();
+//                                pointsBatch.setLength(0); // Очищаем буфер
+//                                stepCounter = 0; // Сброс счетчика
+//                                try {
+//                                    TimeUnit.MILLISECONDS.sleep(300); // Приостановка выполнения на 1 секунду
+//                                } catch (InterruptedException e) {
+//                                    // Обработка исключения, если поток прерван
+//                                } // Пауза перед следующей группой точек
+//                                out.println("--END OF BATCH--"); // Отправляем маркер конца пакета
+//                            } else {
+//                                out.print(pointsBatch);
+//                                pointsBatch.setLength(0);
+//                            }
+//                        }
+//                    }
                     out.println("end");
                 }
 

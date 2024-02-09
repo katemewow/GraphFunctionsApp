@@ -21,4 +21,8 @@ public enum Params {
     public static Float getFloatValueOfJson(Params param, JSONObject json) {
         return Float.valueOf((String) (json.get(param.name())));
     }
+
+    public static Integer getIntegerValueOfJson(Params param, JSONObject json) {
+        return Integer.valueOf((String) (json.get(param.name())));
+    }
 }

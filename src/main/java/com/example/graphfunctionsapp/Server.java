@@ -37,6 +37,8 @@ public class Server implements Runnable {
     private static class ClientHandler implements Runnable {
         private final Socket clientSocket;
 
+        private int maxSteps = 100;
+
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
         }
@@ -61,10 +63,11 @@ public class Server implements Runnable {
                     double tStep = getDoubleValueOfJson(T_STEP, json);
                     double param1 = getFloatValueOfJson(PARAM1, json);
                     double param2 = getFloatValueOfJson(PARAM2, json);
+                    maxSteps = getIntegerValueOfJson(T_EMIT, json); // limit
                     Function3D function = new Function3D();
 
                     int stepCounter = 0;
-                    int maxSteps = 100; // Количество шагов до отправки группы точек
+                     // Количество шагов до отправки группы точек
                     StringBuilder pointsBatch = new StringBuilder();
 
                     for (double x = t0; x <= tend; x += tStep) {

@@ -66,74 +66,36 @@ public class Server implements Runnable {
                     maxSteps = getIntegerValueOfJson(T_EMIT, json); // limit
                     String funcName = getStringValueOfJson(FUNC_NAME, json);
 
-                    switch (funcName) {
-                        case "Basic_func":
-                            Function3D function = new Function3D();
-                            int stepCounter = 0;
-                            // Количество шагов до отправки группы точек
-                            StringBuilder pointsBatch = new StringBuilder();
-                            for (double x = t0; x <= tend; x += tStep) {
-                                for (double y = t0; y <= tend; y += tStep) {
-                                    double z = function.compute(x, y, param1, param2);
-                                    stepCounter++;
-                                    pointsBatch.append(createJsonToAnswer(x, y, z)).append("\n");
+                    Function3D function = new Function3D();
 
-                                    if (stepCounter >= maxSteps) {
-                                        // Отправляем накопленные точки
-                                        out.print(pointsBatch);
-                                        out.flush();
-                                        pointsBatch.setLength(0); // Очищаем буфер
-                                        stepCounter = 0; // Сброс счетчика
-                                        try {
-                                            TimeUnit.MILLISECONDS.sleep(300); // Приостановка выполнения на 1 секунду
-                                        } catch (InterruptedException e) {
-                                            // Обработка исключения, если поток прерван
-                                        } // Пауза перед следующей группой точек
-                                        out.println("--END OF BATCH--"); // Отправляем маркер конца пакета
-                                    } else {
-                                        out.print(pointsBatch);
-                                        pointsBatch.setLength(0);
-                                    }
-                                }
+                    int stepCounter = 0;
+                     // Количество шагов до отправки группы точек
+                    StringBuilder pointsBatch = new StringBuilder();
+
+                    for (double x = t0; x <= tend; x += tStep) {
+                        for (double y = t0; y <= tend; y += tStep) {
+                            double z = function.callFunction(funcName, x, y, param1, param2);
+                            stepCounter++;
+                            pointsBatch.append(createJsonToAnswer(x, y, z)).append("\n");
+
+                            if (stepCounter >= maxSteps) {
+                                // Отправляем накопленные точки
+                                out.print(pointsBatch);
+                                out.flush();
+                                pointsBatch.setLength(0); // Очищаем буфер
+                                stepCounter = 0; // Сброс счетчика
+                                try {
+                                    TimeUnit.MILLISECONDS.sleep(300); // Приостановка выполнения на 1 секунду
+                                } catch (InterruptedException e) {
+                                    // Обработка исключения, если поток прерван
+                                } // Пауза перед следующей группой точек
+                                out.println("--END OF BATCH--"); // Отправляем маркер конца пакета
+                            } else {
+                                out.print(pointsBatch);
+                                pointsBatch.setLength(0);
                             }
-                            break;
-                        case "Other_func":
-                            break;
-                        default:
-                            break;
+                        }
                     }
-
-
-//                    Function3D function = new Function3D();
-//
-//                    int stepCounter = 0;
-//                     // Количество шагов до отправки группы точек
-//                    StringBuilder pointsBatch = new StringBuilder();
-
-//                    for (double x = t0; x <= tend; x += tStep) {
-//                        for (double y = t0; y <= tend; y += tStep) {
-//                            double z = function.compute(x, y, param1, param2);
-//                            stepCounter++;
-//                            pointsBatch.append(createJsonToAnswer(x, y, z)).append("\n");
-//
-//                            if (stepCounter >= maxSteps) {
-//                                // Отправляем накопленные точки
-//                                out.print(pointsBatch);
-//                                out.flush();
-//                                pointsBatch.setLength(0); // Очищаем буфер
-//                                stepCounter = 0; // Сброс счетчика
-//                                try {
-//                                    TimeUnit.MILLISECONDS.sleep(300); // Приостановка выполнения на 1 секунду
-//                                } catch (InterruptedException e) {
-//                                    // Обработка исключения, если поток прерван
-//                                } // Пауза перед следующей группой точек
-//                                out.println("--END OF BATCH--"); // Отправляем маркер конца пакета
-//                            } else {
-//                                out.print(pointsBatch);
-//                                pointsBatch.setLength(0);
-//                            }
-//                        }
-//                    }
                     out.println("end");
                 }
 

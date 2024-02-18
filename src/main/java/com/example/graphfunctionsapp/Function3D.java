@@ -32,7 +32,7 @@ public class Function3D {
              case "Func_veronica":
                  return Func_veronica(x, y, param1, param2);
              case "Func_liza":
-                 return Func_veronica(x, y, param1, param2);
+                 return Func_liza(x, y, param1, param2);
             default:
                 throw new IllegalArgumentException("Unknown function name: " + functionName);
         }

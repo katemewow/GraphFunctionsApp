@@ -28,7 +28,7 @@ public class Function3D {
                 return Basic_func1(x, y, param1, param2);
             case "Basic_func2":
                 return Basic_func2(x, y, param1, param2);
-//             Добавляем новые функции по мере необходимости
+//             Добавляем новые s
              case "Func_veronica":
                  return Func_veronica(x, y, param1, param2);
              case "Func_liza":

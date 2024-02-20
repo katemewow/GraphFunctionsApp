@@ -18,7 +18,7 @@ public class Function3D {
 
     public double Func_liza(double x, double y, double param1, double param2) {
         // Здесь можно изменить формулу на любую другую функцию
-            return (Math.sin(x*y*param1)*Math.cos(param2));
+            return (Math.sin(x*Math.pi*param1)*Math.sin(y*Math.pi*param2));
     }
 
     // Метод для вызова функции по названию
